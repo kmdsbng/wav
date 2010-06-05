@@ -135,6 +135,6 @@ $(function(){
     var mouseTimer = setInterval(function() {
         //if (gotAxis) clearInterval(mouseTimer);
         onData(lastMouseData);
-    }, 300);
+    }, 900);
 });
 
