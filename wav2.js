@@ -9,6 +9,24 @@ $.extend({
             return this.playUrl(this.convertToURL(data));
         },
         createSignal: function(t, sinF, factor){
+            function createSignalSub(freq) {
+              for(i = 0; i < t; i++){
+                  sig = Math.sin(phase) * (1 - factor) + (Math.cos(phase) > 0 ? 1.0 : -1.0) * factor / 2;
+                  sig = (sig + 1) / 2 * (255 - (255 * i / t));
+                  signals += String.fromCharCode(sig);
+                  phase += freq;
+              };
+            }
+            function drawLine(freq) {
+              for(i = 0; i < t; i++){
+                  sig = Math.sin(phase) * (1 - factor) + (Math.cos(phase) > 0 ? 1.0 : -1.0) * factor / 2;
+                  sig = (sig + 1) / 2 * (255 - (255 * i / t));
+                  if (i < width && i % 5 == 0) {
+                      ctx.lineTo(i, sig / 255 * height);
+                  }
+                  phase += freq;
+              };
+            }
             var i;
             var signals, sig, phase, hz;
 
@@ -27,17 +45,11 @@ $.extend({
 
             var width = window.innerWidth;
             var height = window.innerHeight;
-            for(i = 0; i < t; i++){
-                sig = Math.sin(phase) * (1 - factor) + (Math.cos(phase) > 0 ? 1.0 : -1.0) * factor / 2;
-                sig = (sig + 1) / 2 * (255 - (255 * i / t));
-                signals += String.fromCharCode(sig);
-                if (i < width && i % 5 == 0) {
-                    ctx.lineTo(i, sig / 255 * height);
-                }
-                phase += freq;
-            };
+            createSignalSub(freq);
+            createSignalSub(freq * (5.0 / 6.0));
+            createSignalSub(freq * (4.0 / 6.0));
+            drawLine(freq);
             ctx.stroke();
-
             return signals;
         },
         convertToURL: function(signals) {
