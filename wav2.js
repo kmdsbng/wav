@@ -5,6 +5,7 @@ $.extend({
     // see http://github.com/yanagia/jsaudio
     wavUtil: {
         playSaw: function(duration, f, factor) {
+            //this.drawWave(duration, f, factor);
             var data = this.createSignal(duration, f, factor);
             return this.playUrl(this.convertToURL(data));
         },
@@ -36,6 +37,43 @@ $.extend({
             var freq = sinF * 2.0 * Math.PI / hz;
             signals = "";
 
+            //var canvas = $('canvas')[0];
+            //$(canvas).attr({ width: window.innerWidth, height: window.innerHeight });
+            //var ctx = $('canvas')[0].getContext('2d');
+            //ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+            //ctx.beginPath();
+            //ctx.moveTo(-1, window.innerHeight / 2);
+
+            var width = window.innerWidth;
+            var height = window.innerHeight;
+            createSignalSub(freq);
+            createSignalSub(freq * (5.0 / 6.0));
+            createSignalSub(freq * (4.0 / 6.0));
+            //drawLine(freq);
+            //ctx.stroke();
+            return signals;
+        },
+
+        drawWave: function(t, sinF, factor) {
+            function drawLine(freq) {
+              for(i = 0; i < t; i++){
+                  sig = Math.sin(phase) * (1 - factor) + (Math.cos(phase) > 0 ? 1.0 : -1.0) * factor / 2;
+                  sig = (sig + 1) / 2 * (255 - (255 * i / t));
+                  if (i < width && i % 5 == 0) {
+                      ctx.lineTo(i, sig / 255 * height);
+                  }
+                  phase += freq;
+              };
+            }
+            var i;
+            var signals, sig, phase, hz;
+
+            hz = 44100;
+            phase = 0;
+            t = Math.round(t*hz);
+
+            var freq = sinF * 2.0 * Math.PI / hz;
+            signals = "";
             var canvas = $('canvas')[0];
             $(canvas).attr({ width: window.innerWidth, height: window.innerHeight });
             var ctx = $('canvas')[0].getContext('2d');
@@ -45,13 +83,11 @@ $.extend({
 
             var width = window.innerWidth;
             var height = window.innerHeight;
-            createSignalSub(freq);
-            createSignalSub(freq * (5.0 / 6.0));
-            createSignalSub(freq * (4.0 / 6.0));
             drawLine(freq);
             ctx.stroke();
-            return signals;
         },
+
+
         convertToURL: function(signals) {
             var wavefile = this.createWaveFile(signals);
             var encodedata = Base64.encode(wavefile);
@@ -121,6 +157,7 @@ $(function(){
     var audio = null;
     var gotAxis = false;
     var lastMouseData = { x: 0, y: 0, z: 0 };
+    var count = 0;
 
     var onData = function(data) {
         var pitch = (-data.y + 1) * 700.0;
@@ -128,6 +165,11 @@ $(function(){
         if (audio) audio.remove();
         audio = null;
         audio = new_audio;
+    };
+    
+    var drawWave = function(data) {
+        var pitch = (-data.y + 1) * 700.0;
+        var new_audio = $.wavUtil.drawWave(0.3, pitch, Math.abs(data.x));
         $('h1').css({ top: (data.y * 40 + 50) + '%', left: (data.x * 40 + 50) + '%' });
     };
     
@@ -148,5 +190,10 @@ $(function(){
         //if (gotAxis) clearInterval(mouseTimer);
         onData(lastMouseData);
     }, 900);
+
+    var drawTimer = setInterval(function() {
+        //if (gotAxis) clearInterval(mouseTimer);
+        drawWave(lastMouseData);
+    }, 100);
 });
 
